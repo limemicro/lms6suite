@@ -87,6 +87,7 @@ lms_suiteFrame::lms_suiteFrame(wxWindow* parent,wxWindowID id)
     cmbPluginsConfig->Append(_("Zipper"));
     cmbPluginsConfig->Append(_("Novena"));
     cmbPluginsConfig->Append(_("Stream"));
+    cmbPluginsConfig->Append(_("LMS6002_USBStick"));
     FlexGridSizer2->Add(cmbPluginsConfig, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     FlexGridSizer1->Add(FlexGridSizer2, 1, wxEXPAND|wxALIGN_LEFT|wxALIGN_TOP, 5);
     Panel1 = new wxPanel(this, ID_PANEL1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _T("ID_PANEL1"));
@@ -130,14 +131,14 @@ lms_suiteFrame::lms_suiteFrame(wxWindow* parent,wxWindowID id)
 
     lms6ctrl = new lms6::LMS6002_MainControl(m_serPort);
     pnl_lms6ctrl = new LMS6002_GUI_Main(Panel1, wxNewId(), lms6ctrl);
-    pnl_lms6ctrl->AssignToConfigurations(PLUGINS_DIGIGREEN|PLUGINS_DIGIRED|PLUGINS_EVB6|PLUGINS_ZIPPER|PLUGINS_NOVENA|PLUGINS_STREAM);
+    pnl_lms6ctrl->AssignToConfigurations(PLUGINS_ALL);
     plugins.push_back(pnl_lms6ctrl);
     panelsManager->AddPane(pnl_lms6ctrl, wxAuiPaneInfo().Name("LMS6002").Caption("LMS6002").Show().Dock().Center().BestSize(pnl_lms6ctrl->GetSize()).MinSize(pnl_lms6ctrl->GetSize()));
 
     adf_control = new ADF_module();
     adf_control->Initialize(m_serPort);
     pnladf_control = new pnlADF4002(adf_control, Panel1, wxNewId());
-    pnladf_control->AssignToConfigurations(PLUGINS_DIGIGREEN|PLUGINS_DIGIRED|PLUGINS_EVB6|PLUGINS_ZIPPER);
+    pnladf_control->AssignToConfigurations(PLUGINS_DIGIGREEN|PLUGINS_DIGIRED|PLUGINS_EVB6|PLUGINS_ZIPPER|PLUGINS_STREAM);
     plugins.push_back(pnladf_control);
     panelsManager->AddPane(pnladf_control, wxAuiPaneInfo().Name("ADF4002").Caption("ADF4002").Float().Hide());
 
@@ -176,19 +177,19 @@ lms_suiteFrame::lms_suiteFrame(wxWindow* parent,wxWindowID id)
     panelsManager->AddPane(myriadrf2ctrl, wxAuiPaneInfo().Name("MyriadRF2").Caption("MyriadRF2").Float().Hide());
 
     minCtrl = new pnlMinimalControls(Panel1, wxNewId());
-    minCtrl->AssignToConfigurations(PLUGINS_EVB6|PLUGINS_DIGIGREEN|PLUGINS_DIGIRED|PLUGINS_ZIPPER|PLUGINS_NOVENA|PLUGINS_STREAM);
+    minCtrl->AssignToConfigurations(PLUGINS_EVB6 | PLUGINS_DIGIGREEN | PLUGINS_DIGIRED | PLUGINS_ZIPPER | PLUGINS_NOVENA | PLUGINS_STREAM | PLUGINS_LMS6002_USBSTICK);
     minCtrl->Initialize(lms6ctrl);
     plugins.push_back(minCtrl);
     minCtrl->UpdateGUI();
     panelsManager->AddPane(minCtrl, wxAuiPaneInfo().Name("MinimalControls").Caption("Minimal Controls").Bottom().Dock().Hide());
 
     pnlFPGA = new pnlFPGAControls(m_serPort, Panel1, wxNewId());
-    pnlFPGA->AssignToConfigurations(PLUGINS_DIGIGREEN|PLUGINS_STREAM);
+    pnlFPGA->AssignToConfigurations(PLUGINS_DIGIGREEN | PLUGINS_STREAM | PLUGINS_LMS6002_USBSTICK);
     plugins.push_back(pnlFPGA);
     panelsManager->AddPane(pnlFPGA, wxAuiPaneInfo().Name("FPGAControls").Caption("FPGA Controls").Bottom().Dock().Hide());
 
     pnlProg = new pnlProgramming(m_serPort, Panel1, wxNewId());
-    pnlProg->AssignToConfigurations(PLUGINS_STREAM|PLUGINS_ZIPPER);
+    pnlProg->AssignToConfigurations(PLUGINS_STREAM | PLUGINS_ZIPPER | PLUGINS_LMS6002_USBSTICK);
     pnlProg->RegisterForNotifications(this);
     plugins.push_back(pnlProg);
     panelsManager->AddPane(pnlProg, wxAuiPaneInfo().Name("Programming").Caption("Programming").Bottom().Dock().Hide());
@@ -200,7 +201,7 @@ lms_suiteFrame::lms_suiteFrame(wxWindow* parent,wxWindowID id)
     panelsManager->AddPane(pnlNovenaBoard, wxAuiPaneInfo().Name("Novena").Caption("Novena").Bottom().Dock().Hide());
 
     pnlHPM = new pnlHPM1000(Panel1, wxNewId());
-    pnlHPM->AssignToConfigurations(PLUGINS_ALL ^ PLUGINS_NOVENA);
+    pnlHPM->AssignToConfigurations(PLUGINS_ALL ^ PLUGINS_NOVENA ^ PLUGINS_LMS6002_USBSTICK);
     pnlHPM->Initialize(m_serPort);
     plugins.push_back(pnlHPM);
     panelsManager->AddPane(pnlHPM, wxAuiPaneInfo().Name("HPM1000").Caption("HPM1000").Bottom().Dock().Hide());
@@ -212,7 +213,7 @@ lms_suiteFrame::lms_suiteFrame(wxWindow* parent,wxWindowID id)
     panelsManager->AddPane(pnlGetInfo , wxAuiPaneInfo().Name("INFO").Caption("INFO").Bottom().Dock().Hide());
 
     pnlrepeater = new pnlRepeater(Panel1, wxNewId());
-    pnlrepeater->AssignToConfigurations(PLUGINS_ZIPPER | PLUGINS_ALL);
+    pnlrepeater->AssignToConfigurations(PLUGINS_ZIPPER | PLUGINS_ALL ^ PLUGINS_LMS6002_USBSTICK);
     pnlrepeater->Initialize(m_serPort);
     plugins.push_back(pnlrepeater);
     panelsManager->AddPane(pnlrepeater, wxAuiPaneInfo().Name("Repeater").Caption("Repeater").Bottom().Hide().Float());
@@ -222,7 +223,6 @@ lms_suiteFrame::lms_suiteFrame(wxWindow* parent,wxWindowID id)
     pnlLms6usb->Initialize(m_serPort);
     plugins.push_back(pnlLms6usb);
     panelsManager->AddPane(pnlLms6usb, wxAuiPaneInfo().Name("LMS6002USB Stick").Caption("LMS6002USB Stick").Bottom().Hide().Float());
-
 
     panelsManager->Update();
 
@@ -366,6 +366,11 @@ void lms_suiteFrame::HandleMessage(const LMS_Message &msg)
             else if(device == LMS_DEV_STREAM)
             {
                 cmbPluginsConfig->SetSelection(6);
+                pnlfft->SetBoardType(3);
+            }
+            else if (device == LMS_DEV_LMS6002USB)
+            {
+                cmbPluginsConfig->SetSelection(7);
                 pnlfft->SetBoardType(3);
             }
             pnlsi51->ModifyClocksGUI();

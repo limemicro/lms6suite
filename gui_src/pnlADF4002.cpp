@@ -421,7 +421,14 @@ pnlADF4002::~pnlADF4002()
 
 void pnlADF4002::OnbtnCalcSendClick(wxCommandEvent& event)
 {
-    control->CalculateRN();
+    double fRef;
+    txtFref->GetValue().ToDouble(&fRef);
+    double fVCO;
+    txtFvco->GetValue().ToDouble(&fVCO);
+    int R, N;
+    control->SetFrefFvco(fRef, fVCO, R, N);
+    spinRCnt->SetValue(R);
+    spinNCnt->SetValue(N);
     control->SendConfig();
 }
 
