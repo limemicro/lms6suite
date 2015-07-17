@@ -18,7 +18,7 @@
 #include "dlgExtraControls.h"
 #include "PluginPanel.h"
 //(*Headers(pnlFFTviewer)
-#include <wx/panel.h>
+#include <wx/frame.h>
 class wxSplitterWindow;
 class wxCheckBox;
 class wxTextCtrl;
@@ -48,12 +48,12 @@ class LMS6002_MainControl;
 
 wxDECLARE_EVENT(wxEVT_COMMAND_THREAD_UPDATE, wxThreadEvent);
 
-class pnlFFTviewer: public wxPanel, public PluginPanel
+class pnlFFTviewer: public wxFrame, public PluginPanel
 {
     friend class PlotUpdateThread;
     public:
 
-        pnlFFTviewer(ConnectionManager* pSerPort, wxWindow* parent,wxWindowID id = -1);
+        pnlFFTviewer(ConnectionManager* pSerPort, wxWindow* parent,wxWindowID id = -1, const wxString& title = wxEmptyString);
         void AssignControl(lms6::LMS6002_MainControl *pControl);
         virtual ~pnlFFTviewer();
         wxCriticalSection m_dataCS;

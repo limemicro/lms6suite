@@ -92,13 +92,14 @@ const long pnlFFTviewer::ID_NOTEBOOK1 = wxNewId();
 //*)
 
 wxDEFINE_EVENT(wxEVT_COMMAND_THREAD_UPDATE, wxThreadEvent);
-BEGIN_EVENT_TABLE(pnlFFTviewer,wxPanel)
+BEGIN_EVENT_TABLE(pnlFFTviewer,wxFrame)
     //(*EventTable(pnlFFTviewer)
     //*)
     EVT_THREAD(wxID_ANY, pnlFFTviewer::OnThreadUpdatePlots)
+    EVT_CLOSE(pnlFFTviewer::OnClose)
 END_EVENT_TABLE()
 
-pnlFFTviewer::pnlFFTviewer(ConnectionManager* pSerPort, wxWindow* parent,wxWindowID id):
+pnlFFTviewer::pnlFFTviewer(ConnectionManager* pSerPort, wxWindow* parent,wxWindowID id, const wxString &title):
     PluginPanel(this)
 {
     lmsControl = NULL;
@@ -144,7 +145,7 @@ pnlFFTviewer::pnlFFTviewer(ConnectionManager* pSerPort, wxWindow* parent,wxWindo
     wxStaticBoxSizer* StaticBoxSizer5;
     wxFlexGridSizer* m_FFTsizer;
 
-    Create(parent, id, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _T("id"));
+    Create(parent, id, title, wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE, _T("id"));
     SetMinSize(wxSize(600,400));
     FlexGridSizer1 = new wxFlexGridSizer(0, 1, 0, 0);
     FlexGridSizer1->AddGrowableCol(0);
@@ -368,7 +369,7 @@ pnlFFTviewer::pnlFFTviewer(ConnectionManager* pSerPort, wxWindow* parent,wxWindo
     m_spectrumSizer->Fit(m_tabSpectrum);
     m_spectrumSizer->SetSizeHints(m_tabSpectrum);
     m_MainTabs->AddPage(m_tabSpectrum, _("Spectrum"), false);
-    FlexGridSizer1->Add(m_MainTabs, 1, wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_TOP, 5);
+    FlexGridSizer1->Add(m_MainTabs, 1, wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_TOP, 0);
     SetSizer(FlexGridSizer1);
     FlexGridSizer1->Fit(this);
     FlexGridSizer1->SetSizeHints(this);
@@ -707,6 +708,12 @@ void pnlFFTviewer::OnClose(wxCloseEvent& event)
 {
     StopCapturing();
     SaveConfig();
+    if (event.CanVeto())
+    {
+        Hide();
+        event.Veto();
+        return;
+    }
     Destroy();
 }
 

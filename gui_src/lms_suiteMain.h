@@ -90,6 +90,8 @@ class lms_suiteFrame: public wxFrame, public SignalHandler
         void OnmenuConnectionSettingsSelected(wxCommandEvent& event);
         void OnShowModule(wxCommandEvent& event);
         void OncmbPluginsConfigSelected(wxCommandEvent& event);
+        void OnCloseFFTviewer(wxCloseEvent& event);
+        void OnShowFFTviewer(wxCommandEvent& event);
         //*)
 
         //(*Identifiers(lms_suiteFrame)

@@ -163,11 +163,11 @@ lms_suiteFrame::lms_suiteFrame(wxWindow* parent,wxWindowID id)
     plugins.push_back(pnlsi56);
     panelsManager->AddPane(pnlsi56, wxAuiPaneInfo().Name("Si5356A").Caption("Si5356A").Float().Hide().BestSize(pnlsi56->GetSize()).MinSize(pnlsi56->GetSize()));
 
-    pnlfft = new pnlFFTviewer(m_serPort, Panel1, wxNewId());
+    pnlfft = new pnlFFTviewer(m_serPort, this, wxNewId(), _("FFT viewer"));
     pnlfft->AssignToConfigurations(PLUGINS_ALL);
     pnlfft->AssignControl(lms6ctrl);
-    plugins.push_back(pnlfft);
-    panelsManager->AddPane(pnlfft, wxAuiPaneInfo().Name("FFTviewer").Caption("FFTviewer").BestSize(pnlfft->GetSize()).MinSize(pnlfft->GetSize()).Float().Hide());
+    //plugins.push_back(pnlfft);
+    //panelsManager->AddPane(pnlfft, wxAuiPaneInfo().Name("FFTviewer").Caption("FFTviewer").BestSize(pnlfft->GetSize()).MinSize(pnlfft->GetSize()).Float().Hide());
 
     myriadrf2ctrl = new pnlMyriadRF2(Panel1, wxNewId());
     myriadrf2ctrl->AssignToConfigurations(PLUGINS_ZIPPER);
@@ -406,11 +406,16 @@ int lms_suiteFrame::SetAvailableModules(unsigned long ePluginsConfiguration_flag
         if( (flags & m_pluginsConfiguration) == false)
         {
             wxAuiPaneInfo *pnl = &panelsManager->GetPane(plugins[i]->GetPluginWindow());
-            pnl->Hide();
+            if (pnl)
+                pnl->Hide();
         }
         else
         {
             wxAuiPaneInfo *pnl = &panelsManager->GetPane(plugins[i]->GetPluginWindow());
+            if (pnl == NULL)
+                continue;
+            if (pnl->window == NULL)
+                continue;
             int mnu_id = pnl->window->GetId();
             wxMenuItem *item = new wxMenuItem(Menu3, mnu_id, _(pnl->name), wxEmptyString, wxITEM_NORMAL);
             Menu3->Append(item);
@@ -418,6 +423,11 @@ int lms_suiteFrame::SetAvailableModules(unsigned long ePluginsConfiguration_flag
         }
     }
     panelsManager->Update();
+
+    //always add fftviewer
+    wxMenuItem *item = new wxMenuItem(Menu3, wxNewId(), _("FFT viewer"), wxEmptyString, wxITEM_NORMAL);
+    Menu3->Append(item);
+    Connect(item->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&lms_suiteFrame::OnShowFFTviewer);
     return 0;
 }
 
@@ -430,4 +440,10 @@ void lms_suiteFrame::OncmbPluginsConfigSelected(wxCommandEvent& event)
     {
         SetAvailableModules( pow(2.0, selection) );
     }
+}
+
+void lms_suiteFrame::OnShowFFTviewer(wxCommandEvent& event)
+{
+    if (pnlfft)
+        pnlfft->Show();
 }
