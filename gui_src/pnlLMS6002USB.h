@@ -19,12 +19,26 @@ class pnlLMS6002USB: public wxPanel, public PluginPanel
 
 		wxButton* btnUpdateAll;		
         wxComboBox* cmbVCXOcontrolVoltage;
+
+        wxPanel* mPanelStreamPLL;
+        wxTextCtrl* txtPllFreqRxMHz;
+        wxTextCtrl* txtPllFreqTxMHz;
+        wxTextCtrl* txtPhaseOffsetDeg;
+        wxButton* btnConfigurePLL;
 		
 		static const long ID_BUTTON_UPDATEALL;		
         static const long ID_VCXOCV;
 
 		void OnbtnUpdateAll(wxCommandEvent& event);
         void ParameterChangeHandler(wxCommandEvent& event);
+    protected:
+        void OnConfigurePLL(wxCommandEvent &event);        
+        enum Status
+        {
+            SUCCESS,
+            FAILURE,
+        };
+        static Status ConfigurePLL(ConnectionManager *serPort, const float fOutTx_MHz, const float fOutRx_MHz, const float phaseShift_deg);
 
 	protected:
         ConnectionManager *m_serPort;

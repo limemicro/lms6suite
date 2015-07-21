@@ -230,7 +230,8 @@ lms_suiteFrame::lms_suiteFrame(wxWindow* parent,wxWindowID id)
     pnl_lms6ctrl->UpdateAllPages();
     minCtrl->UpdateGUI();
     Layout();
-    SetAvailableModules(PLUGINS_ALL);
+    cmbPluginsConfig->SetSelection(7);
+    SetAvailableModules(PLUGINS_LMS6002_USBSTICK);
 }
 
 lms_suiteFrame::~lms_suiteFrame()

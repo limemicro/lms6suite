@@ -7,6 +7,7 @@
 
 #include "ConnectionManager.h"
 #include "pnlWFMLoader.h"
+#include "LMS_Commands.h"
 
 //(*IdInit(pnlFPGAControls)
 //*)
@@ -23,8 +24,9 @@ pnlFPGAControls::pnlFPGAControls(ConnectionManager* pSerPort, wxWindow* parent,w
 	BuildContent(parent,id,pos,size);
 	mWFM = new pnlWFMLoader(m_serPort, this, wxNewId());
 	mPanelContainer->Add(mWFM, 1, wxFIXED_MINSIZE|wxEXPAND|wxALIGN_LEFT|wxALIGN_TOP, 5);
-	mPanelContainer->Fit(this);
-	mPanelContainer->SetSizeHints(this);
+	
+    mPanelContainer->Fit(this);
+    mPanelContainer->SetSizeHints(this);
 }
 
 void pnlFPGAControls::BuildContent(wxWindow* parent,wxWindowID id,const wxPoint& pos,const wxSize& size)
@@ -45,4 +47,3 @@ pnlFPGAControls::~pnlFPGAControls()
 	//(*Destroy(pnlFPGAControls)
 	//*)
 }
-

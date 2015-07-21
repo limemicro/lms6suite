@@ -504,6 +504,8 @@ pnlFFTviewer::pnlFFTviewer(ConnectionManager* pSerPort, wxWindow* parent,wxWindo
 #ifdef NOVENA
     fpga_init();
 #endif
+
+    SetBoardType(3); //set default data format to Stream board
 }
 
 pnlFFTviewer::~pnlFFTviewer()

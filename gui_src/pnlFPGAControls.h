@@ -26,7 +26,6 @@ class pnlFPGAControls: public wxPanel, public PluginPanel
 
 		//(*Handlers(pnlFPGAControls)
 		//*)
-
 	protected:
 	    pnlWFMLoader* mWFM;
         ConnectionManager* m_serPort;
