@@ -261,7 +261,7 @@ pnlLMS6002USB::Status pnlLMS6002USB::ConfigurePLL(ConnectionManager *serPort, co
     outBuffer[index++] = ((c1 % 2) ? 0x80 : 0x00) | ((c0 % 2) ? 0x20 : 0) | ((M % 2) ? 0x08 : 0x00) | ((N % 2) ? 0x02 : 0x00) | ((N == 1) ? 0x01 : 0x00); //N_bypassed
 
     float Fstep_us = 1 / (8 * fOutTx_MHz*c1);
-    float Fstep_deg = (360 * Fstep_us) / (1 / fOutTx_MHz);
+    float Fstep_deg = (360 * Fstep_us) / (1 / Fin_MHz);
     short nSteps = phaseShift_deg / Fstep_deg;
     unsigned short reg2 = 0x0400 | (nSteps & 0x3FF);
     outBuffer[index++] = 0x00;
