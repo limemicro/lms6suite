@@ -77,8 +77,8 @@ lms_suiteFrame::lms_suiteFrame(wxWindow* parent,wxWindowID id)
     FlexGridSizer1->AddGrowableCol(0);
     FlexGridSizer1->AddGrowableRow(1);
     FlexGridSizer2 = new wxFlexGridSizer(0, 3, 0, 0);
-    StaticText1 = new wxStaticText(this, ID_STATICTEXT1, _("Modules collection:"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT1"));
-    FlexGridSizer2->Add(StaticText1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    //StaticText1 = new wxStaticText(this, ID_STATICTEXT1, _("Modules collection:"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT1"));
+    //FlexGridSizer2->Add(StaticText1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     cmbPluginsConfig = new wxComboBox(this, ID_COMBOBOX1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, 0, 0, wxDefaultValidator, _T("ID_COMBOBOX1"));
     cmbPluginsConfig->SetSelection( cmbPluginsConfig->Append(_("CUSTOM")) );
     cmbPluginsConfig->Append(_("EVB6"));
@@ -88,6 +88,7 @@ lms_suiteFrame::lms_suiteFrame(wxWindow* parent,wxWindowID id)
     cmbPluginsConfig->Append(_("Novena"));
     cmbPluginsConfig->Append(_("Stream"));
     cmbPluginsConfig->Append(_("LMS6002_USBStick"));
+    cmbPluginsConfig->Hide();
     FlexGridSizer2->Add(cmbPluginsConfig, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     FlexGridSizer1->Add(FlexGridSizer2, 1, wxEXPAND|wxALIGN_LEFT|wxALIGN_TOP, 5);
     Panel1 = new wxPanel(this, ID_PANEL1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _T("ID_PANEL1"));
@@ -345,7 +346,7 @@ void lms_suiteFrame::HandleMessage(const LMS_Message &msg)
             eLMS_DEV device = m_serPort->GetConnectedDeviceType();
             SetTitle(applicationName+" - "+m_serPort->GetConnectionStatus());
             cout << "program title: " << applicationName+" - "+m_serPort->GetConnectionStatus() << endl;
-            if(device == LMS_DEV_UNKNOWN)
+            /*if(device == LMS_DEV_UNKNOWN)
             {
                 cmbPluginsConfig->SetSelection(5);
                 pnlfft->SetBoardType(2);
@@ -373,7 +374,7 @@ void lms_suiteFrame::HandleMessage(const LMS_Message &msg)
             {
                 cmbPluginsConfig->SetSelection(7);
                 pnlfft->SetBoardType(3);
-            }
+            }*/
             pnlsi51->ModifyClocksGUI();
             wxCommandEvent evt;
             OncmbPluginsConfigSelected(evt);

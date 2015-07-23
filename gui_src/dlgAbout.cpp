@@ -1889,7 +1889,7 @@ void dlgAbout::BuildContent(wxWindow* parent,wxWindowID id,const wxPoint& pos,co
     str = lms_suite::DATE;
     str.ToLong(&day);
     int release = 0;
-    txtVersion->SetLabel(wxString::Format("version: %li.%li.%li.%i\nBuild date: %s-%s-%s", year%100, month, day, release, lms_suite::YEAR, lms_suite::MONTH, lms_suite::DATE));
+    txtVersion->SetLabel(wxString::Format("version: %li.%li.%li.%i (USB stick)\nBuild date: %s-%s-%s", year%100, month, day, release, lms_suite::YEAR, lms_suite::MONTH, lms_suite::DATE));
 }
 
 dlgAbout::~dlgAbout()

@@ -215,13 +215,14 @@ pnlFFTviewer::pnlFFTviewer(ConnectionManager* pSerPort, wxWindow* parent,wxWindo
     m_controlsSizer->AddGrowableCol(0);
     FlexGridSizer2 = new wxFlexGridSizer(0, 3, 0, 0);
     FlexGridSizer2->AddGrowableCol(1);
-    StaticText1 = new wxStaticText(m_tabSpectrum, ID_STATICTEXT1, _("Data format:"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT1"));
-    FlexGridSizer2->Add(StaticText1, 1, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
+    //StaticText1 = new wxStaticText(m_tabSpectrum, ID_STATICTEXT1, _("Data format:"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT1"));
+    //FlexGridSizer2->Add(StaticText1, 1, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
     cmbBoardType = new wxChoice(m_tabSpectrum, ID_CHOICE2, wxDefaultPosition, wxDefaultSize, 0, 0, 0, wxDefaultValidator, _T("ID_CHOICE2"));
     cmbBoardType->SetSelection( cmbBoardType->Append(_("DigiGreen")) );
     cmbBoardType->Append(_("DigiRed"));
     cmbBoardType->Append(_("Novena"));
     cmbBoardType->Append(_("Stream"));
+    cmbBoardType->Hide();
     FlexGridSizer2->Add(cmbBoardType, 1, wxEXPAND|wxALIGN_LEFT|wxALIGN_TOP, 5);
     m_controlsSizer->Add(FlexGridSizer2, 1, wxEXPAND|wxALIGN_LEFT|wxALIGN_TOP, 5);
     StaticBoxSizer2 = new wxStaticBoxSizer(wxVERTICAL, m_tabSpectrum, _("FFT parameters"));
