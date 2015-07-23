@@ -491,7 +491,7 @@ pnlFFTviewer::pnlFFTviewer(ConnectionManager* pSerPort, wxWindow* parent,wxWindo
 
         m_glFFTplot->settings.title = "FFT";
         m_glFFTplot->settings.titleXaxis = "Frequency";
-        m_glFFTplot->settings.titleYaxis = "Amplitude (dB)";
+        m_glFFTplot->settings.titleYaxis = "Amplitude (dBFS)";
         m_glFFTplot->settings.xUnits = "Hz";
         //m_glFFTplot->settings.yUnits = "dB";
         m_glFFTplot->settings.markersEnabled = true;

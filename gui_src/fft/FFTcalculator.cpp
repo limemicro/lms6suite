@@ -257,7 +257,7 @@ void* FFTcalculator::CalculationsThread(void* pFFTcalculator)
                 for (int s = 0; s<fftSize; ++s)
                 {
                     pkt->amplitudes[s] /= packetsCollected[pkt->channel];     
-                    pkt->amplitudes[s] = pkt->amplitudes[s] != 0 ? (10 * log10(pkt->amplitudes[s])) - 69.2369 : val0;
+                    pkt->amplitudes[s] = pkt->amplitudes[s] != 0 ? (20 * log10(pkt->amplitudes[s])) - 69.2369 : val0;
                 }
                 if (pthis->m_dccorr) // remove dc component from spectrum
                 {
