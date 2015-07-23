@@ -73,17 +73,21 @@ void pnlLMS6002USB::BuildContent(wxWindow* parent,wxWindowID id,const wxPoint& p
 
 
     mPanelStreamPLL = new wxPanel(this, wxNewId());
-    wxFlexGridSizer* sizerPllControls = new wxFlexGridSizer(0, 2, 5, 5);
+    wxFlexGridSizer* sizerPllControls = new wxFlexGridSizer(0, 3, 5, 5);
     sizerPllControls->Add(new wxStaticText(mPanelStreamPLL, wxID_ANY, _("Tx Freq(MHz):")), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
-    txtPllFreqTxMHz = new wxTextCtrl(mPanelStreamPLL, wxNewId());
+    txtPllFreqTxMHz = new wxTextCtrl(mPanelStreamPLL, wxNewId(), _("61.44"));
     sizerPllControls->Add(txtPllFreqTxMHz, 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    lblRealFreqTx = new wxStaticText(mPanelStreamPLL, wxID_ANY, _("Real: ? MHz"));
+    sizerPllControls->Add(lblRealFreqTx, 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
 
     sizerPllControls->Add(new wxStaticText(mPanelStreamPLL, wxID_ANY, _("Rx Freq(MHz):")), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
-    txtPllFreqRxMHz = new wxTextCtrl(mPanelStreamPLL, wxNewId());
+    txtPllFreqRxMHz = new wxTextCtrl(mPanelStreamPLL, wxNewId(), _("15.36"));
     sizerPllControls->Add(txtPllFreqRxMHz, 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    lblRealFreqRx = new wxStaticText(mPanelStreamPLL, wxID_ANY, _("Real: ? MHz"));
+    sizerPllControls->Add(lblRealFreqRx, 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
 
     sizerPllControls->Add(new wxStaticText(mPanelStreamPLL, wxID_ANY, _("Phase offset(Deg):")), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
-    txtPhaseOffsetDeg = new wxTextCtrl(mPanelStreamPLL, wxNewId());
+    txtPhaseOffsetDeg = new wxTextCtrl(mPanelStreamPLL, wxNewId(), _("90"));
     sizerPllControls->Add(txtPhaseOffsetDeg, 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
     btnConfigurePLL = new wxButton(mPanelStreamPLL, wxNewId(), _("Configure"));
     sizerPllControls->Add(btnConfigurePLL, 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
@@ -142,80 +146,80 @@ pnlLMS6002USB::Status pnlLMS6002USB::ConfigurePLL(ConnectionManager *serPort, co
 {
     if (serPort == NULL)
         return FAILURE;
-    const float vcoLimits_MHz[2] = { 1000, 1300 };    
+    const float vcoLimits_MHz[2] = { 800, 1300 };    
     const short bufSize = 64;
     unsigned char outBuffer[bufSize];
     unsigned char inBuffer[bufSize];
 
     float Fin_MHz = 30.72;
-
+    //max freq 80, min 5,  defaults 61.44 15.36 90
     int N, M;
     int c0, c1, c2, c3;
-    bool c0ok, c1ok, c2ok, c3ok;
-    bool success = false;
-    float delta_prec = 0.1;
-    for (N = 1; N<255; ++N)
+
+    int minC = fOutTx_MHz > fOutRx_MHz ? (vcoLimits_MHz[0] / fOutTx_MHz) : (vcoLimits_MHz[0] / fOutRx_MHz);
+    int maxC = fOutTx_MHz < fOutRx_MHz ? (vcoLimits_MHz[1] / fOutTx_MHz) : (vcoLimits_MHz[1] / fOutRx_MHz);  
+    if (maxC > 255)
+        maxC = 255;
+
+    vector<float> deviations;
+    vector<int> Ncoefs;
+    vector<int> Mcoefs;
+    for (int i = minC; i <= maxC; ++i)
     {
-        float fref = Fin_MHz / N;
-        for (M = 1; M<255; ++M)
+        float ratio = (fOutTx_MHz*i) / Fin_MHz;
+            
+        M = 255 * ratio;
+        N = 255;
+        float NcoefDiff = (N / ratio) - (int)((N / ratio) + 0.5);
+        //is integer N closer to rounding up or rounding down
+        if (NcoefDiff < 0)
         {
-            c0ok = false;
-            c1ok = false;
-            c2ok = false;
-            c3ok = false;
-            float fVco = fref*M;
+            N = (int)((N / ratio) + 0.5) / 2;
+            M = (int)((M / ratio) / 2 + 0.5);
+        }
+        else
+        {
+            N = (int)(N / ratio);
+            M = (int)(M / ratio) / (N / (N / ratio));
+        }
+        Ncoefs.push_back(N);
+        Mcoefs.push_back(M);
+        float Fvco = Fin_MHz*M / N;
+        c0 = Fvco / 100 + 0.5;
+        c1 = Fvco / fOutTx_MHz + 0.5;
+        c2 = Fvco / fOutTx_MHz + 0.5;
+        c3 = Fvco / fOutRx_MHz + 0.5;
 
-            if (fVco < vcoLimits_MHz[0] || fVco > vcoLimits_MHz[1])
-                continue;
-            for (c1 = 1; c1 < 255; ++c1)
-            {
-                float fout = fVco / c1;
-                float delta = abs(fout - fOutTx_MHz);
-                if (fout == fOutTx_MHz || delta < delta_prec)
-                {
-                    c1ok = true;
-                    break;
-                }
-            }
-            for (c2 = 1; c2 < 255; ++c2)
-            {
-                float fout = fVco / c2;
-                float delta = abs(fout - fOutTx_MHz);
-                if (fout == fOutTx_MHz || delta < delta_prec)
-                {
-                    c2ok = true;
-                    break;
-                }
-            }
-            for (c3 = 1; c3 < 255; ++c3)
-            {
-                float fout = fVco / c3;
-                float delta = abs(fout - fOutRx_MHz);
-                if (fout == fOutRx_MHz || delta < delta_prec)
-                {
-                    c3ok = true;
-                    break;
-                }
-            }
-            for (c0 = 1; c0 < 255; ++c0)
-            {
-                float fout = fVco / c0;
-                float delta = fout - 100;
-                if (fout == 100 || (delta < delta_prec && delta < 0 ))
-                {
-                    c0ok = true;
-                    break;
-                }
-            }
-
-            if (c0ok && c1ok && c2ok && c3ok)
-                goto foundCoefs;
+        float realFX3 = Fin_MHz*M / N / c0;            
+        float realTx = Fin_MHz*M / N / c1;        
+        float realRx = Fin_MHz*M / N / c3;
+        deviations.push_back(abs(fOutTx_MHz - realTx) + abs(fOutRx_MHz - realRx));
+    }
+    int minIndex = 0;
+    float minDeviation = deviations[0];
+    for (int i = 0; i < deviations.size(); ++i)
+    {
+        if (deviations[i] < minDeviation)
+        {
+            minDeviation = deviations[i];
+            minIndex = i;
         }
     }
-    foundCoefs:
 
-    if (!(c0ok && c1ok && c2ok && c3ok))
-        return FAILURE;
+    M = Mcoefs[minIndex];
+    N = Ncoefs[minIndex];
+        
+    float Fvco = Fin_MHz*M / N;
+    c0 = Fvco / 100 + 0.5;
+    c1 = Fvco / fOutTx_MHz + 0.5;
+    c2 = Fvco / fOutTx_MHz + 0.5;
+    c3 = Fvco / fOutRx_MHz + 0.5;
+
+    float realTx = Fin_MHz*M / N / c1;
+    float realRx = Fin_MHz*M / N / c3;
+
+    lblRealFreqTx->SetLabel(wxString::Format(_("Real: %.3f MHz"), realTx));
+    lblRealFreqRx->SetLabel(wxString::Format(_("Real: %.3f MHz"), realRx));
 
     short index = 8;
     memset(outBuffer, 0, bufSize);

@@ -22,6 +22,8 @@ class pnlLMS6002USB: public wxPanel, public PluginPanel
 
         wxPanel* mPanelStreamPLL;
         wxTextCtrl* txtPllFreqRxMHz;
+        wxStaticText* lblRealFreqTx;
+        wxStaticText* lblRealFreqRx;
         wxTextCtrl* txtPllFreqTxMHz;
         wxTextCtrl* txtPhaseOffsetDeg;
         wxButton* btnConfigurePLL;
@@ -38,7 +40,7 @@ class pnlLMS6002USB: public wxPanel, public PluginPanel
             SUCCESS,
             FAILURE,
         };
-        static Status ConfigurePLL(ConnectionManager *serPort, const float fOutTx_MHz, const float fOutRx_MHz, const float phaseShift_deg);
+        Status ConfigurePLL(ConnectionManager *serPort, const float fOutTx_MHz, const float fOutRx_MHz, const float phaseShift_deg);
 
 	protected:
         ConnectionManager *m_serPort;
