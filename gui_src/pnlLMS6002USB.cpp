@@ -146,7 +146,8 @@ pnlLMS6002USB::Status pnlLMS6002USB::ConfigurePLL(ConnectionManager *serPort, co
 {
     if (serPort == NULL)
         return FAILURE;
-    const float vcoLimits_MHz[2] = { 800, 1300 };    
+    const float vcoLimits_MHz[2] = { 650, 1250 };    
+    const float Fref_Limits[] = { 5, 325 };
     const short bufSize = 64;
     unsigned char outBuffer[bufSize];
     unsigned char inBuffer[bufSize];
@@ -164,12 +165,14 @@ pnlLMS6002USB::Status pnlLMS6002USB::ConfigurePLL(ConnectionManager *serPort, co
     vector<float> deviations;
     vector<int> Ncoefs;
     vector<int> Mcoefs;
+    vector<float> vcos;
     for (int i = minC; i <= maxC; ++i)
     {
         float ratio = (fOutTx_MHz*i) / Fin_MHz;
             
         M = 255 * ratio;
         N = 255;
+
         float NcoefDiff = (N / ratio) - (int)((N / ratio) + 0.5);
         //is integer N closer to rounding up or rounding down
         if (NcoefDiff < 0)
@@ -179,12 +182,20 @@ pnlLMS6002USB::Status pnlLMS6002USB::ConfigurePLL(ConnectionManager *serPort, co
         }
         else
         {
-            N = (int)(N / ratio);
-            M = (int)(M / ratio) / (N / (N / ratio));
-        }
+            N = (int)(N / ratio + 0.5);
+            M = (int)(M / ratio + 0.5);
+        }        
+        float Fvco = Fin_MHz*M / N;
+        if (Fvco < vcoLimits_MHz[0] || Fvco > vcoLimits_MHz[1])
+            continue;
+
+        if (Fin_MHz / N < Fref_Limits[0] || Fin_MHz / N > Fref_Limits[1])
+            continue;
+
+        vcos.push_back(Fvco);
         Ncoefs.push_back(N);
         Mcoefs.push_back(M);
-        float Fvco = Fin_MHz*M / N;
+
         c0 = Fvco / 100 + 0.5;
         c1 = Fvco / fOutTx_MHz + 0.5;
         c2 = Fvco / fOutTx_MHz + 0.5;
@@ -196,12 +207,17 @@ pnlLMS6002USB::Status pnlLMS6002USB::ConfigurePLL(ConnectionManager *serPort, co
         deviations.push_back(abs(fOutTx_MHz - realTx) + abs(fOutRx_MHz - realRx));
     }
     int minIndex = 0;
+    if (deviations.size() == 0)
+        return FAILURE;
+
     float minDeviation = deviations[0];
+    float devVCO = vcos[0];
     for (int i = 0; i < deviations.size(); ++i)
     {
-        if (deviations[i] < minDeviation)
+        if (deviations[i] < minDeviation && vcos[i] > devVCO)
         {
             minDeviation = deviations[i];
+            devVCO = vcos[i];
             minIndex = i;
         }
     }
