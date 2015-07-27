@@ -101,6 +101,8 @@ void pnlProgramming::BuildContent(wxWindow* parent,wxWindowID id,const wxPoint& 
 	Connect(ID_BUTTON2,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&pnlProgramming::OnbtnProgMyriadClick);
 	Connect(ID_CHOICE2,wxEVT_COMMAND_CHOICE_SELECTED,(wxObjectEventFunction)&pnlProgramming::OncmbDeviceSelect);
 	//*)
+
+    cmbDevice->SetSelection(1);
 	wxCommandEvent evt;
 	OncmbDeviceSelect(evt);
 }
@@ -116,7 +118,7 @@ void pnlProgramming::OnbtnOpenClick(wxCommandEvent& event)
 {
     if(!m_programmer)
         return;
-    wxFileDialog dlg(this, _("Select file"), "", "", "bin (*.bin)| *.bin|rbf (*.rbf)| *.rbf|All files(*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    wxFileDialog dlg(this, _("Select file"), "", "", "rbf (*.rbf)| *.rbf|bin (*.bin)| *.bin|All files(*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
     if (dlg.ShowModal() == wxID_CANCEL)
         return;
     lblFilename->SetLabel(dlg.GetPath());
