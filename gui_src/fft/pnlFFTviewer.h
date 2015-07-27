@@ -46,6 +46,8 @@ namespace lms6
 class LMS6002_MainControl;
 }
 
+#include "PlotUpdateThread.h"
+
 wxDECLARE_EVENT(wxEVT_COMMAND_THREAD_UPDATE, wxThreadEvent);
 
 class pnlFFTviewer: public wxFrame, public PluginPanel
@@ -57,6 +59,7 @@ class pnlFFTviewer: public wxFrame, public PluginPanel
         void AssignControl(lms6::LMS6002_MainControl *pControl);
         virtual ~pnlFFTviewer();
         wxCriticalSection m_dataCS;
+        PlotUpdateThread::CalculationResults mPowerMeasurements;
         SamplesCollector *getSamplesCollector() { return m_collector; };
         void SaveConfig();
         void StopCapturing();
@@ -202,6 +205,15 @@ class pnlFFTviewer: public wxFrame, public PluginPanel
         wxStaticText* StaticText17;
         wxStaticText* StaticText4;
         wxStaticText* StaticText16;
+
+        wxStaticText* lblIratio;
+        wxTextCtrl* txtCFreq1;
+        wxTextCtrl* txtCFreq2;
+        wxTextCtrl* txtBW1;
+        wxTextCtrl* txtBW2;
+        wxStaticText* lblPwrCh1;
+        wxStaticText* lblPwrCh2;
+        wxStaticText* lbldBc;
         //*)
 
         DECLARE_EVENT_TABLE()

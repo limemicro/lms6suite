@@ -363,6 +363,50 @@ pnlFFTviewer::pnlFFTviewer(ConnectionManager* pSerPort, wxWindow* parent,wxWindo
     FlexGridSizer9->Add(FlexGridSizer16, 1, wxEXPAND|wxALIGN_LEFT|wxALIGN_TOP, 5);
     StaticBoxSizer5->Add(FlexGridSizer9, 1, wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     m_controlsSizer->Add(StaticBoxSizer5, 1, wxEXPAND|wxALIGN_LEFT|wxALIGN_TOP, 5);
+
+
+    wxStaticBoxSizer* StaticBoxSizer1 = new wxStaticBoxSizer(wxHORIZONTAL, m_tabSpectrum, _T("Measurement"));
+    FlexGridSizer13 = new wxFlexGridSizer(0, 1, 0, 0);
+    FlexGridSizer13->AddGrowableCol(0);
+    wxFlexGridSizer* FlexGridSizer18 = new wxFlexGridSizer(0, 2, 0, 15);
+    FlexGridSizer18->AddGrowableCol(1);
+    FlexGridSizer18->Add(new wxStaticText(m_tabSpectrum, wxID_ANY, _T("Peak to avg ratio(dB):"), wxDefaultPosition, wxDefaultSize, 0), 1, wxEXPAND | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    lblIratio = new wxStaticText(m_tabSpectrum, wxID_ANY, _T("0"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT24"));
+    FlexGridSizer18->Add(lblIratio, 1, wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizer13->Add(FlexGridSizer18, 1, wxBOTTOM | wxEXPAND | wxALIGN_LEFT | wxALIGN_TOP, 5);
+    wxFlexGridSizer* sizerPowerMeasure = new wxFlexGridSizer(0, 2, 0, 5);
+    sizerPowerMeasure->AddGrowableCol(1);
+    sizerPowerMeasure->Add(new wxStaticText(m_tabSpectrum, wxID_ANY, _T("Ch 1. center offset(MHz):"), wxDefaultPosition, wxDefaultSize, 0), 1, wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL, 5);
+    txtCFreq1 = new wxTextCtrl(m_tabSpectrum, ID_TEXTCTRL8, _T("0"), wxDefaultPosition, wxSize(40, -1), 0, wxDefaultValidator, _T("ID_TEXTCTRL8"));
+    txtCFreq1->SetExtraStyle(txtCFreq1->GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
+    sizerPowerMeasure->Add(txtCFreq1, 1, wxEXPAND | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL, 5);
+    sizerPowerMeasure->Add(new wxStaticText(m_tabSpectrum, wxID_ANY, _T("Bandwidth(MHz):"), wxDefaultPosition, wxDefaultSize, 0), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    txtBW1 = new wxTextCtrl(m_tabSpectrum, wxNewId(), _T("1"), wxDefaultPosition, wxSize(40, -1), 0, wxDefaultValidator, _T("ID_TEXTCTRL9"));
+    txtBW1->SetExtraStyle(txtBW1->GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
+    sizerPowerMeasure->Add(txtBW1, 1, wxEXPAND | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL, 5);
+    
+    sizerPowerMeasure->Add(new wxStaticText(m_tabSpectrum, wxID_ANY, _T("Power(dbFS):"), wxDefaultPosition, wxDefaultSize, 0), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    lblPwrCh1 = new wxStaticText(m_tabSpectrum, wxNewId(), _T("0.00"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT16"));
+    sizerPowerMeasure->Add(lblPwrCh1, 1, wxTOP | wxBOTTOM | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL, 2);
+    sizerPowerMeasure->Add(new wxStaticText(m_tabSpectrum, wxID_ANY, _T("Ch 2. center offset(MHz):"), wxDefaultPosition, wxDefaultSize, 0), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    txtCFreq2 = new wxTextCtrl(m_tabSpectrum, wxNewId(), _T("0"), wxDefaultPosition, wxSize(40, -1), 0, wxDefaultValidator, _T("ID_TEXTCTRL10"));
+    txtCFreq2->SetExtraStyle(txtCFreq2->GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
+    sizerPowerMeasure->Add(txtCFreq2, 1, wxEXPAND | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL, 5);
+    sizerPowerMeasure->Add(new wxStaticText(m_tabSpectrum, wxID_ANY, _T("Bandwidth(MHz):"), wxDefaultPosition, wxDefaultSize, 0), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    txtBW2 = new wxTextCtrl(m_tabSpectrum, wxNewId(), _T("1"), wxDefaultPosition, wxSize(40, -1), 0, wxDefaultValidator, _T("ID_TEXTCTRL11"));
+    txtBW2->SetExtraStyle(txtBW2->GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
+    sizerPowerMeasure->Add(txtBW2, 1, wxEXPAND | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL, 5);
+    sizerPowerMeasure->Add(new wxStaticText(m_tabSpectrum, wxID_ANY, _T("Power(dbFS):"), wxDefaultPosition, wxDefaultSize, 0), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    lblPwrCh2 = new wxStaticText(m_tabSpectrum, wxID_ANY, _T("0.00"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT23"));
+    sizerPowerMeasure->Add(lblPwrCh2, 1, wxTOP | wxBOTTOM | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL, 2);
+    sizerPowerMeasure->Add(new wxStaticText(m_tabSpectrum, wxID_ANY, _T("dBc:"), wxDefaultPosition, wxDefaultSize, 0), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    lbldBc = new wxStaticText(m_tabSpectrum, wxID_ANY, _T("\?\?\?"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT27"));
+    sizerPowerMeasure->Add(lbldBc, 1, wxTOP | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL, 2);
+    FlexGridSizer13->Add(sizerPowerMeasure, 1, wxEXPAND | wxALIGN_LEFT | wxALIGN_TOP, 5);
+    StaticBoxSizer1->Add(FlexGridSizer13, 1, wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL, 5);
+    m_controlsSizer->Add(StaticBoxSizer1, 1, wxEXPAND | wxALIGN_LEFT | wxALIGN_TOP, 5);
+
+
     btnExtraControls = new wxButton(m_tabSpectrum, ID_BUTTON6, _("Extra Controls"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON6"));
     m_controlsSizer->Add(btnExtraControls, 1, wxALIGN_TOP|wxALIGN_CENTER_HORIZONTAL, 5);
     m_spectrumSizer->Add(m_controlsSizer, 1, wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_TOP, 5);
@@ -666,8 +710,16 @@ void pnlFFTviewer::OnThreadUpdatePlots(wxThreadEvent &evt)
         return;
 
     t2 = getMilis();
-    if(t2 - t1 >= 1000)
+    if (t2 - t1 >= 1000)
     {
+        PlotUpdateThread::CalculationResults measurements;
+        measurements = mPowerMeasurements;
+        //measurements = evt.GetPayload<PlotUpdateThread::CalculationResults>(); //can't use, it causes antivirus to report as false positive
+        lblPwrCh1->SetLabelText(wxString::Format("%3.2f", measurements.pwrCh1));
+        lblPwrCh2->SetLabelText(wxString::Format("%3.2f", measurements.pwrCh2));
+        lbldBc->SetLabelText(wxString::Format("%3.2f", measurements.dbc));
+        lblIratio->SetLabelText(wxString::Format("%3.2f", measurements.iqPeakToAvgRatio));
+
         float fps = 0;
         fps = (1000.0*m_redrawsDone)/(t2-t1);
         m_redrawsDone = 0;

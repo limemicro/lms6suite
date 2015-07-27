@@ -824,7 +824,7 @@ void* SamplesCollector::TestingSamplingThread(void* pCollector)
 
     bool skip = false;
 
-    double Fs = 4;
+    double Fs = 8;
     double timeIndex = 0;
     double timeStep = 1/Fs;
     double freqMHz = 1;
@@ -837,8 +837,8 @@ void* SamplesCollector::TestingSamplingThread(void* pCollector)
 		for(int i=0; i<(bytesToRead)/sizeof(short); i+=2)
         {
             gbuf[i] = 2047*cos(2*M_PI*freqMHz*timeIndex);
-            gbuf[i] |= 0x1000;
             gbuf[i+1] = 2047*cos(2*M_PI*freqMHz*timeIndex-M_PI/2);
+            gbuf[i+1] |= 0x1000;
             timeIndex+=timeStep;
         }
         milSleep(100);

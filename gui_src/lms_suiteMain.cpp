@@ -168,8 +168,7 @@ lms_suiteFrame::lms_suiteFrame(wxWindow* parent,wxWindowID id)
     pnlfft = new pnlFFTviewer(m_serPort, this, wxNewId(), _("FFT viewer"));
     pnlfft->AssignToConfigurations(PLUGINS_ALL);
     pnlfft->AssignControl(lms6ctrl);
-    //plugins.push_back(pnlfft);
-    //panelsManager->AddPane(pnlfft, wxAuiPaneInfo().Name("FFTviewer").Caption("FFTviewer").BestSize(pnlfft->GetSize()).MinSize(pnlfft->GetSize()).Float().Hide());
+    pnlfft->SetSize(wxSize(800, 600));
 
     myriadrf2ctrl = new pnlMyriadRF2(Panel1, wxNewId());
     myriadrf2ctrl->AssignToConfigurations(PLUGINS_ZIPPER);
@@ -178,7 +177,7 @@ lms_suiteFrame::lms_suiteFrame(wxWindow* parent,wxWindowID id)
     panelsManager->AddPane(myriadrf2ctrl, wxAuiPaneInfo().Name("MyriadRF2").Caption("MyriadRF2").Float().Hide());
 
     minCtrl = new pnlMinimalControls(Panel1, wxNewId());
-    minCtrl->AssignToConfigurations(PLUGINS_EVB6 | PLUGINS_DIGIGREEN | PLUGINS_DIGIRED | PLUGINS_ZIPPER | PLUGINS_NOVENA | PLUGINS_STREAM | PLUGINS_LMS6002_USBSTICK);
+    minCtrl->AssignToConfigurations(PLUGINS_EVB6 | PLUGINS_DIGIGREEN | PLUGINS_DIGIRED | PLUGINS_ZIPPER | PLUGINS_NOVENA | PLUGINS_STREAM);
     minCtrl->Initialize(lms6ctrl);
     plugins.push_back(minCtrl);
     minCtrl->UpdateGUI();

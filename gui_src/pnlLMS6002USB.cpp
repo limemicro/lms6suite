@@ -81,7 +81,7 @@ void pnlLMS6002USB::BuildContent(wxWindow* parent,wxWindowID id,const wxPoint& p
     sizerPllControls->Add(lblRealFreqTx, 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
 
     sizerPllControls->Add(new wxStaticText(mPanelStreamPLL, wxID_ANY, _("Rx Freq(MHz):")), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
-    txtPllFreqRxMHz = new wxTextCtrl(mPanelStreamPLL, wxNewId(), _("15.36"));
+    txtPllFreqRxMHz = new wxTextCtrl(mPanelStreamPLL, wxNewId(), _("61.44"));
     sizerPllControls->Add(txtPllFreqRxMHz, 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
     lblRealFreqRx = new wxStaticText(mPanelStreamPLL, wxID_ANY, _("Real: ? MHz"));
     sizerPllControls->Add(lblRealFreqRx, 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
