@@ -235,8 +235,9 @@ void pnlLMS6002USB::RegisterParameterChangeHandler(wxCommandEvent& event)
     GenericPacket pkt;
     pkt.cmd = CMD_BRDSPI16_RD;
     pkt.outLen = 2;
-    pkt.outBuffer[0] = (reg.address >> 8);
-    pkt.outBuffer[1] = reg.address & 0xFF;
+    unsigned short *outBuffer;
+    outBuffer = (unsigned short*)&pkt.outBuffer[0];
+    outBuffer[0] = reg.address;
 
     int status = STATUS_UNDEFINED;
     if (m_serPort)
@@ -247,13 +248,15 @@ void pnlLMS6002USB::RegisterParameterChangeHandler(wxCommandEvent& event)
         return;
     }
 
-    unsigned short regValue = pkt.inBuffer[2] << 8 | pkt.inBuffer[3];
+    unsigned short *inBuffer;
+    inBuffer = (unsigned short*)&pkt.inBuffer[0];
+    unsigned short regValue = inBuffer[1];
 
     regValue &= ~mask;
     regValue |= (event.GetInt() << reg.lsb) & mask;
 
-    pkt.outBuffer[2] = (regValue >> 8);
-    pkt.outBuffer[3] = regValue;
+    pkt.cmd = CMD_BRDSPI16_WR;
+    outBuffer[1] = regValue;
     pkt.outLen = 4;
 
     if (m_serPort)
@@ -283,8 +286,9 @@ void pnlLMS6002USB::OnbtnUpdateAll(wxCommandEvent& event)
         GenericPacket pkt;
         pkt.cmd = CMD_BRDSPI16_RD;
         pkt.outLen = 2;
-        pkt.outBuffer[0] = (reg.address >> 8);
-        pkt.outBuffer[1] = reg.address & 0xFF;
+        unsigned short* outBuffer;
+        outBuffer = (unsigned short*)&pkt.outBuffer[0];
+        outBuffer[0] = reg.address;
 
         int status = STATUS_UNDEFINED;
         if (m_serPort)
@@ -292,7 +296,9 @@ void pnlLMS6002USB::OnbtnUpdateAll(wxCommandEvent& event)
         if (status != STATUS_COMPLETED_CMD)
             continue;
 
-        value = (pkt.inBuffer[2] << 8) | pkt.inBuffer[3];
+        unsigned short *inBuffer;
+        inBuffer = (unsigned short*)&pkt.inBuffer[0];
+        value = inBuffer[1];
 
         value = value & mask;
         value = value >> reg.lsb;
