@@ -5,12 +5,24 @@
 #include <wx/stattext.h>
 #include <wx/button.h>
 #include <wx/string.h>
+#include <wx/spinctrl.h>
 
 const long pnlLMS6002USB::ID_BUTTON_UPDATEALL = wxNewId();
 const long pnlLMS6002USB::ID_VCXOCV = wxNewId();
 
 BEGIN_EVENT_TABLE(pnlLMS6002USB,wxPanel)
 END_EVENT_TABLE()
+
+pnlLMS6002USB::Register::Register()
+: address(0), msb(0), lsb(0), defaultValue(0)
+{
+}
+
+
+pnlLMS6002USB::Register::Register(unsigned short address, unsigned char msb, unsigned char lsb, unsigned short defaultValue)
+    : address(address), msb(msb), lsb(lsb), defaultValue(defaultValue)
+{
+}
 
 pnlLMS6002USB::pnlLMS6002USB(wxWindow* parent,wxWindowID id,const wxPoint& pos,const wxSize& size, int style, wxString name)
     : PluginPanel(this)
@@ -52,7 +64,7 @@ void pnlLMS6002USB::BuildContent(wxWindow* parent,wxWindowID id,const wxPoint& p
 	wxFlexGridSizer* FlexGridSizer1;
 
 	Create(parent, id, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _T("id"));
-	FlexGridSizer1 = new wxFlexGridSizer(0, 1, 0, 0);
+	FlexGridSizer1 = new wxFlexGridSizer(0, 1, 5, 5);
 
     wxStaticBoxSizer* namedBox = new wxStaticBoxSizer(wxVERTICAL, this, "VCXO Control Voltage");
     wxArrayString choices;
@@ -61,47 +73,168 @@ void pnlLMS6002USB::BuildContent(wxWindow* parent,wxWindowID id,const wxPoint& p
     cmbVCXOcontrolVoltage = new wxComboBox(this, ID_VCXOCV, "", wxDefaultPosition, wxDefaultSize, choices);
 
     namedBox->Add(cmbVCXOcontrolVoltage, 1, wxEXPAND | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
-
-    btnUpdateAll = new wxButton(this, ID_BUTTON_UPDATEALL, _T("Refresh"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON1"));
-    FlexGridSizer1->Add(btnUpdateAll, 1, wxEXPAND | wxALIGN_LEFT | wxALIGN_TOP, 5);
+    cmbVCXOcontrolVoltage->SetSelection(0);
+        
     FlexGridSizer1->Add(namedBox, 1, wxEXPAND | wxALIGN_LEFT | wxALIGN_TOP, 5);
 	SetSizer(FlexGridSizer1);
-	
-
-    Connect(ID_BUTTON_UPDATEALL, wxEVT_COMMAND_BUTTON_CLICKED, (wxObjectEventFunction)&pnlLMS6002USB::OnbtnUpdateAll);
+        
     Connect(ID_VCXOCV, wxEVT_COMMAND_COMBOBOX_SELECTED, (wxObjectEventFunction)&pnlLMS6002USB::ParameterChangeHandler);
 
-
+    wxSize freqTextfieldSize(64, -1);
     mPanelStreamPLL = new wxPanel(this, wxNewId());
     wxFlexGridSizer* sizerPllControls = new wxFlexGridSizer(0, 3, 5, 5);
-    sizerPllControls->Add(new wxStaticText(mPanelStreamPLL, wxID_ANY, _("Tx Freq(MHz):")), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
-    txtPllFreqTxMHz = new wxTextCtrl(mPanelStreamPLL, wxNewId(), _("61.44"));
+    sizerPllControls->Add(new wxStaticText(mPanelStreamPLL, wxID_ANY, _("Tx CLK (MHz):")), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    txtPllFreqTxMHz = new wxTextCtrl(mPanelStreamPLL, wxNewId(), _("61.44"), wxDefaultPosition, freqTextfieldSize);
     sizerPllControls->Add(txtPllFreqTxMHz, 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
     lblRealFreqTx = new wxStaticText(mPanelStreamPLL, wxID_ANY, _("Real: ? MHz"));
     sizerPllControls->Add(lblRealFreqTx, 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
 
-    sizerPllControls->Add(new wxStaticText(mPanelStreamPLL, wxID_ANY, _("Rx Freq(MHz):")), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
-    txtPllFreqRxMHz = new wxTextCtrl(mPanelStreamPLL, wxNewId(), _("61.44"));
+    sizerPllControls->Add(new wxStaticText(mPanelStreamPLL, wxID_ANY, _("Rx CLK (MHz):")), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    txtPllFreqRxMHz = new wxTextCtrl(mPanelStreamPLL, wxNewId(), _("61.44"), wxDefaultPosition, freqTextfieldSize);
     sizerPllControls->Add(txtPllFreqRxMHz, 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
     lblRealFreqRx = new wxStaticText(mPanelStreamPLL, wxID_ANY, _("Real: ? MHz"));
     sizerPllControls->Add(lblRealFreqRx, 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
 
-    sizerPllControls->Add(new wxStaticText(mPanelStreamPLL, wxID_ANY, _("Phase offset(Deg):")), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
-    txtPhaseOffsetDeg = new wxTextCtrl(mPanelStreamPLL, wxNewId(), _("90"));
+    sizerPllControls->Add(new wxStaticText(mPanelStreamPLL, wxID_ANY, _("Tx CLK Phase (Deg):")), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    txtPhaseOffsetDeg = new wxTextCtrl(mPanelStreamPLL, wxNewId(), _("90"), wxDefaultPosition, freqTextfieldSize);
     sizerPllControls->Add(txtPhaseOffsetDeg, 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
     btnConfigurePLL = new wxButton(mPanelStreamPLL, wxNewId(), _("Configure"));
     sizerPllControls->Add(btnConfigurePLL, 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
     Connect(btnConfigurePLL->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(pnlLMS6002USB::OnConfigurePLL), NULL, this);
 
-    wxStaticBoxSizer* streamPllGroup = new wxStaticBoxSizer(wxHORIZONTAL, mPanelStreamPLL, _T("Stream PLL"));
+    wxStaticBoxSizer* streamPllGroup = new wxStaticBoxSizer(wxHORIZONTAL, mPanelStreamPLL, _T("LMS6 Digital Interface Clock"));
     mPanelStreamPLL->SetSizer(streamPllGroup);
     streamPllGroup->Add(sizerPllControls, 1, wxALIGN_LEFT | wxALIGN_TOP, 5);
     streamPllGroup->Fit(mPanelStreamPLL);
     FlexGridSizer1->Add(mPanelStreamPLL, 1, wxEXPAND | wxALIGN_LEFT | wxALIGN_TOP, 5);
 
+    wxStaticBoxSizer* bypasses = new wxStaticBoxSizer(wxVERTICAL, this, _T("Bypass"));
+    chkRX_DCCORR_BYP = new wxCheckBox(this, wxNewId(), _("Rx DC corrector"));
+    bypasses->Add(chkRX_DCCORR_BYP, 1, wxALIGN_LEFT | wxALIGN_TOP, 5);
+    Connect(chkRX_DCCORR_BYP->GetId(), wxEVT_CHECKBOX, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+
+    chkRX_PHCORR_BYP = new wxCheckBox(this, wxNewId(), _("Rx Phase corrector"));;
+    bypasses->Add(chkRX_PHCORR_BYP, 1, wxALIGN_LEFT | wxALIGN_TOP, 5);
+    Connect(chkRX_PHCORR_BYP->GetId(), wxEVT_CHECKBOX, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+
+    chkRX_GCORR_BYP = new wxCheckBox(this, wxNewId(), _("Rx Gain corrector"));;
+    bypasses->Add(chkRX_GCORR_BYP, 1, wxALIGN_LEFT | wxALIGN_TOP, 5);
+    Connect(chkRX_GCORR_BYP->GetId(), wxEVT_CHECKBOX, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+
+    chkTX_PHCORR_BYP = new wxCheckBox(this, wxNewId(), _("Tx Phase corrector"));;
+    bypasses->Add(chkTX_PHCORR_BYP, 1, wxALIGN_LEFT | wxALIGN_TOP, 5);
+    Connect(chkTX_PHCORR_BYP->GetId(), wxEVT_CHECKBOX, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+
+    chkTX_GCORR_BYP = new wxCheckBox(this, wxNewId(), _("Tx Gain corrector"));;
+    bypasses->Add(chkTX_GCORR_BYP, 1, wxALIGN_LEFT | wxALIGN_TOP, 5);
+    Connect(chkTX_GCORR_BYP->GetId(), wxEVT_CHECKBOX, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+
+    FlexGridSizer1->Add(bypasses, 1, wxEXPAND | wxALIGN_LEFT | wxALIGN_TOP, 5);
+
+    wxFlexGridSizer* tx_correctorsSizer = new wxFlexGridSizer(0, 2, 0, 5);
+    wxSize spinBoxSize(64, -1);
+    long spinBoxStyle = wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER;
+    tx_correctorsSizer->Add(new wxStaticText(this, wxID_ANY, _("Tx GCORRQ")), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    spinTX_GCORRQ = new wxSpinCtrl(this, wxNewId(), wxEmptyString, wxDefaultPosition, spinBoxSize, spinBoxStyle, 0, 255, 255);
+    tx_correctorsSizer->Add(spinTX_GCORRQ, 1, wxALIGN_LEFT | wxALIGN_TOP, 5);
+    Connect(spinTX_GCORRQ->GetId(), wxEVT_TEXT_ENTER, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+    Connect(spinTX_GCORRQ->GetId(), wxEVT_SPINCTRL, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+    Connect(spinTX_GCORRQ->GetId(), wxEVT_SPIN, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+
+    tx_correctorsSizer->Add(new wxStaticText(this, wxID_ANY, _("Tx GCORRI")), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    spinTX_GCORRI = new wxSpinCtrl(this, wxNewId(), wxEmptyString, wxDefaultPosition, spinBoxSize, spinBoxStyle, 0, 255, 255);
+    tx_correctorsSizer->Add(spinTX_GCORRI, 1, wxALIGN_LEFT | wxALIGN_TOP, 5);
+    Connect(spinTX_GCORRI->GetId(), wxEVT_TEXT_ENTER, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+    Connect(spinTX_GCORRI->GetId(), wxEVT_SPINCTRL, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+    Connect(spinTX_GCORRI->GetId(), wxEVT_SPIN, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+
+    tx_correctorsSizer->Add(new wxStaticText(this, wxID_ANY, _("Tx PHCORR")), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    spinTX_PHCORR = new wxSpinCtrl(this, wxNewId(), wxEmptyString, wxDefaultPosition, spinBoxSize, spinBoxStyle, -2048, 2047, 0);
+    tx_correctorsSizer->Add(spinTX_PHCORR, 1, wxALIGN_LEFT | wxALIGN_TOP, 5);
+    Connect(spinTX_PHCORR->GetId(), wxEVT_TEXT_ENTER, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+    Connect(spinTX_PHCORR->GetId(), wxEVT_SPINCTRL, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+    Connect(spinTX_PHCORR->GetId(), wxEVT_SPIN, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+
+    wxFlexGridSizer* rx_correctorsSizer = new wxFlexGridSizer(0, 2, 0, 5);
+    rx_correctorsSizer->Add(new wxStaticText(this, wxID_ANY, _("Rx GCORRQ")), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    spinRX_GCORRQ = new wxSpinCtrl(this, wxNewId(), wxEmptyString, wxDefaultPosition, spinBoxSize, spinBoxStyle, 0, 255, 255);;
+    rx_correctorsSizer->Add(spinRX_GCORRQ, 1, wxALIGN_LEFT | wxALIGN_TOP, 5);
+    Connect(spinRX_GCORRQ->GetId(), wxEVT_TEXT_ENTER, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+    Connect(spinRX_GCORRQ->GetId(), wxEVT_SPINCTRL, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+    Connect(spinRX_GCORRQ->GetId(), wxEVT_SPIN, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+
+    rx_correctorsSizer->Add(new wxStaticText(this, wxID_ANY, _("Rx GCORRI")), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    spinRX_GCORRI = new wxSpinCtrl(this, wxNewId(), wxEmptyString, wxDefaultPosition, spinBoxSize, spinBoxStyle, 0, 255, 255);;
+    rx_correctorsSizer->Add(spinRX_GCORRI, 1, wxALIGN_LEFT | wxALIGN_TOP, 5);
+    Connect(spinRX_GCORRI->GetId(), wxEVT_TEXT_ENTER, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+    Connect(spinRX_GCORRI->GetId(), wxEVT_SPINCTRL, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+    Connect(spinRX_GCORRI->GetId(), wxEVT_SPIN, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+
+    rx_correctorsSizer->Add(new wxStaticText(this, wxID_ANY, _("Rx PHCORR")), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    spinRX_PHCORR = new wxSpinCtrl(this, wxNewId(), wxEmptyString, wxDefaultPosition, spinBoxSize, spinBoxStyle, -2048, 2047, 0);
+    rx_correctorsSizer->Add(spinRX_PHCORR, 1, wxALIGN_LEFT | wxALIGN_TOP, 5);
+    Connect(spinRX_PHCORR->GetId(), wxEVT_TEXT_ENTER, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+    Connect(spinRX_PHCORR->GetId(), wxEVT_SPINCTRL, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+    Connect(spinRX_PHCORR->GetId(), wxEVT_SPIN, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+
+    rx_correctorsSizer->Add(new wxStaticText(this, wxID_ANY, _("Rx DCCORR")), 1, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 5);
+    cmbRX_DCCORR = new wxComboBox(this, wxNewId(), wxEmptyString);
+    for (int i = 0; i < 8; ++i)
+        cmbRX_DCCORR->Append(wxString::Format(_("2^%i"), i + 12));
+    cmbRX_DCCORR->SetSelection(7);
+    rx_correctorsSizer->Add(cmbRX_DCCORR, 1, wxALIGN_LEFT | wxALIGN_TOP, 5);
+    Connect(cmbRX_DCCORR->GetId(), wxEVT_COMBOBOX, wxCommandEventHandler(pnlLMS6002USB::RegisterParameterChangeHandler), NULL, this);
+
+    wxFlexGridSizer* correctorsSizer = new wxFlexGridSizer(0, 2, 0, 5);
+    correctorsSizer->Add(tx_correctorsSizer, 1, wxALIGN_LEFT | wxALIGN_TOP, 5);
+    correctorsSizer->Add(rx_correctorsSizer, 1, wxALIGN_LEFT | wxALIGN_TOP, 5);
+
+    wxStaticBoxSizer* correctorsGroup = new wxStaticBoxSizer(wxVERTICAL, this, _T("Correctors"));
+    correctorsGroup->Add(correctorsSizer, 1, wxEXPAND | wxALIGN_LEFT | wxALIGN_TOP, 5);
+    FlexGridSizer1->Add(correctorsGroup, 1, wxEXPAND | wxALIGN_LEFT | wxALIGN_TOP, 5);
+
+    btnUpdateAll = new wxButton(this, ID_BUTTON_UPDATEALL, _T("Refresh All"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON1"));
+    Connect(ID_BUTTON_UPDATEALL, wxEVT_COMMAND_BUTTON_CLICKED, (wxObjectEventFunction)&pnlLMS6002USB::OnbtnUpdateAll);
+    FlexGridSizer1->Add(btnUpdateAll, 1, wxEXPAND | wxALIGN_LEFT | wxALIGN_TOP, 5);
+
     FlexGridSizer1->Fit(this);
     FlexGridSizer1->SetSizeHints(this);
     Layout();
+
+    controlsPtr2Registers.clear();
+    controlsPtr2Registers[chkRX_DCCORR_BYP] = Register(0x0010, 4, 4, 0);
+    controlsPtr2Registers[chkRX_PHCORR_BYP] = Register(0x0010, 3, 3, 0);
+    controlsPtr2Registers[chkRX_GCORR_BYP] = Register(0x0010, 2, 2, 0);
+    controlsPtr2Registers[chkTX_PHCORR_BYP] = Register(0x0010, 1, 1, 0);
+    controlsPtr2Registers[chkTX_GCORR_BYP] = Register(0x0010, 0, 0, 0);
+
+    controlsPtr2Registers[spinTX_GCORRQ] = Register(0x0011, 15, 8, 255);
+    controlsPtr2Registers[spinTX_GCORRI] = Register(0x0011, 7, 0, 255);
+    controlsPtr2Registers[spinTX_PHCORR] = Register(0x0012, 11, 0, 0);
+
+    controlsPtr2Registers[spinRX_GCORRQ] = Register(0x0013, 15, 8, 255);
+    controlsPtr2Registers[spinRX_GCORRI] = Register(0x0013, 7, 0, 255);
+    controlsPtr2Registers[cmbRX_DCCORR] = Register(0x0014, 14, 12, 7);
+    controlsPtr2Registers[spinRX_PHCORR] = Register(0x0013, 11, 0, 0);
+}
+
+void pnlLMS6002USB::RegisterParameterChangeHandler(wxCommandEvent& event)
+{
+    if (controlsPtr2Registers.find(event.GetEventObject()) == controlsPtr2Registers.end())
+        return; //control not found in the table
+
+    /*if (m_serPort->IsOpen() == false)
+    {
+        wxMessageBox(_("device not connected"), _("Error"), wxICON_ERROR | wxOK);
+        return;
+    }*/
+
+    Register reg = controlsPtr2Registers[event.GetEventObject()];
+    unsigned short mask = (~(~0 << (reg.msb - reg.lsb + 1))) << reg.lsb; // creates bit mask
+    unsigned short regValue = m_serPort->mSPI_read(reg.address);
+    regValue &= ~mask;
+    regValue |= (event.GetInt() << reg.lsb) & mask;
+    m_serPort->mSPI_write(reg.address, regValue);
 }
 
 pnlLMS6002USB::~pnlLMS6002USB()
@@ -112,6 +245,24 @@ pnlLMS6002USB::~pnlLMS6002USB()
 void pnlLMS6002USB::OnbtnUpdateAll(wxCommandEvent& event)
 {
     UpdatePanel();
+    map<wxObject*, Register>::iterator iter;
+    wxClassInfo* spinctr = wxClassInfo::FindClass("wxSpinCtrl");
+    wxClassInfo* checkboxctr = wxClassInfo::FindClass("wxCheckBox");
+    wxClassInfo* comboboxctr = wxClassInfo::FindClass("wxComboBox");
+    for (iter = controlsPtr2Registers.begin(); iter != controlsPtr2Registers.end(); ++iter)
+    {
+        Register reg = iter->second;
+        unsigned short mask = (~(~0 << (reg.msb - reg.lsb + 1))) << reg.lsb; // creates bit mask
+        unsigned short value = m_serPort->mSPI_read(reg.address);
+        value = value & mask;
+        value = value >> reg.lsb;
+        if (iter->first->IsKindOf(spinctr))
+            reinterpret_cast<wxSpinCtrl*>(iter->first)->SetValue(value);
+        else if(iter->first->IsKindOf(checkboxctr))
+            reinterpret_cast<wxCheckBox*>(iter->first)->SetValue(value);
+        else if (iter->first->IsKindOf(comboboxctr))
+            reinterpret_cast<wxComboBox*>(iter->first)->SetSelection(value);
+    }
 }
 
 void pnlLMS6002USB::ParameterChangeHandler(wxCommandEvent& event)
