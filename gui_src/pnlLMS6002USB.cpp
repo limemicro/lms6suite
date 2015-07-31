@@ -215,7 +215,7 @@ void pnlLMS6002USB::BuildContent(wxWindow* parent,wxWindowID id,const wxPoint& p
     controlsPtr2Registers[spinRX_GCORRQ] = Register(0x0013, 15, 8, 255);
     controlsPtr2Registers[spinRX_GCORRI] = Register(0x0013, 7, 0, 255);
     controlsPtr2Registers[cmbRX_DCCORR] = Register(0x0014, 14, 12, 7);
-    controlsPtr2Registers[spinRX_PHCORR] = Register(0x0013, 11, 0, 0);
+    controlsPtr2Registers[spinRX_PHCORR] = Register(0x0014, 11, 0, 0);
 }
 
 void pnlLMS6002USB::RegisterParameterChangeHandler(wxCommandEvent& event)
