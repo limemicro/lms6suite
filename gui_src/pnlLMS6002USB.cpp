@@ -231,10 +231,35 @@ void pnlLMS6002USB::RegisterParameterChangeHandler(wxCommandEvent& event)
 
     Register reg = controlsPtr2Registers[event.GetEventObject()];
     unsigned short mask = (~(~0 << (reg.msb - reg.lsb + 1))) << reg.lsb; // creates bit mask
-    unsigned short regValue = m_serPort->mSPI_read(reg.address);
+
+    GenericPacket pkt;
+    pkt.cmd = CMD_BRDSPI16_RD;
+    pkt.outLen = 2;
+    pkt.outBuffer[0] = (reg.address >> 8);
+    pkt.outBuffer[1] = reg.address & 0xFF;
+
+    int status = STATUS_UNDEFINED;
+    if (m_serPort)
+        status = m_serPort->TransferPacket(pkt);
+    if (status != STATUS_COMPLETED_CMD)
+    {
+        wxMessageBox("Failed to read data", "Warning");
+        return;
+    }
+
+    unsigned short regValue = pkt.inBuffer[2] << 8 | pkt.inBuffer[3];
+
     regValue &= ~mask;
     regValue |= (event.GetInt() << reg.lsb) & mask;
-    m_serPort->mSPI_write(reg.address, regValue);
+
+    pkt.outBuffer[2] = (regValue >> 8);
+    pkt.outBuffer[3] = regValue;
+    pkt.outLen = 4;
+
+    if (m_serPort)
+        status = m_serPort->TransferPacket(pkt);
+    if (status != STATUS_COMPLETED_CMD)
+        wxMessageBox("Failed to send data", "Warning");
 }
 
 pnlLMS6002USB::~pnlLMS6002USB()
@@ -253,7 +278,22 @@ void pnlLMS6002USB::OnbtnUpdateAll(wxCommandEvent& event)
     {
         Register reg = iter->second;
         unsigned short mask = (~(~0 << (reg.msb - reg.lsb + 1))) << reg.lsb; // creates bit mask
-        unsigned short value = m_serPort->mSPI_read(reg.address);
+        unsigned short value;
+        
+        GenericPacket pkt;
+        pkt.cmd = CMD_BRDSPI16_RD;
+        pkt.outLen = 2;
+        pkt.outBuffer[0] = (reg.address >> 8);
+        pkt.outBuffer[1] = reg.address & 0xFF;
+
+        int status = STATUS_UNDEFINED;
+        if (m_serPort)
+            status = m_serPort->TransferPacket(pkt);
+        if (status != STATUS_COMPLETED_CMD)
+            continue;
+
+        value = (pkt.inBuffer[2] << 8) | pkt.inBuffer[3];
+
         value = value & mask;
         value = value >> reg.lsb;
         if (iter->first->IsKindOf(spinctr))
