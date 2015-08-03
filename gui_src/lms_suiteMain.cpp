@@ -14,7 +14,7 @@
 #include <wx/intl.h>
 #include <wx/string.h>
 //*)
-
+#include "pnlLMS6002USB.h"
 #include "LMS6002_MainControl.h"
 #include "LMS_Parameter.h"
 #include "Algorithms.h"
@@ -41,7 +41,6 @@
 #include "pnlHPM1000.h"
 #include "pnlInfo.h"
 #include "pnlRepeater.h"
-#include "pnlLMS6002USB.h"
 //(*IdInit(lms_suiteFrame)
 const long lms_suiteFrame::ID_STATICTEXT1 = wxNewId();
 const long lms_suiteFrame::ID_COMBOBOX1 = wxNewId();
