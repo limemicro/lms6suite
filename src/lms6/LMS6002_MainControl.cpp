@@ -157,7 +157,7 @@ bool LMS6002_MainControl::LoadFromFile(const char *filename)
         string type = "";
         type = parser.Get("type", "undefined");
         stringstream ss;
-        if(type != "LMS6002 configuration")
+        if(strstr(type.c_str(), "LMS6002 configuration") == NULL)
         {
             ss << "File " << filename << " not recognized" << endl;
             //MessageLog::getInstance()->write(ss.str(), LOG_ERROR);
@@ -416,7 +416,7 @@ bool LMS6002_MainControl::SetParam(LMS_Parameter param, const long value)
         }
         GenericPacket pkt;
         if(m_device->GetExpansionBoardType() != EXP_BOARD_HPM1000)  //to protect HPM1000 reset gpio
-        {            
+        {
             if (m_device->GetConnectedDeviceType() == LMS_DEV_DIGIGREEN || m_device->GetConnectedDeviceType() == LMS_DEV_DIGIRED)
             {
                 pkt.cmd = CMD_LMS_LNA;
@@ -445,7 +445,7 @@ bool LMS6002_MainControl::SetParam(LMS_Parameter param, const long value)
         }
 
         if(m_device->GetExpansionBoardType() != EXP_BOARD_HPM1000) //to protect HPM1000 reset gpio
-        {            
+        {
             if (m_device->GetConnectedDeviceType() == LMS_DEV_DIGIGREEN || m_device->GetConnectedDeviceType() == LMS_DEV_DIGIRED)
             {
                 GenericPacket pkt;
