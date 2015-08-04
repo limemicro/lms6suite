@@ -108,29 +108,12 @@ bool ConnectionUSB::Open()
 bool ConnectionUSB::Open(int index)
 {
 #ifndef __unix__
-//	unsigned short vID;
-//	unsigned short pID;
 	wstring m_hardwareDesc = L"";
 	if( index < USBDevicePrimary->DeviceCount())
 	{
 		if(USBDevicePrimary->Open(index))
 		{
-//			vID = USBDevicePrimary->VendorID;
-//			pID = USBDevicePrimary->ProductID;
-			//check if vendor and product ID matches
-//			if( vID != 1204 )
-//            {
-//                return 0;
-//            }
-//            else
-//            {
-//                if( pID != 241 && pID != 34323 )
-//                {
-//                    return 0;
-//                }
-//            }
             m_hardwareDesc = USBDevicePrimary->Product;
-            //m_hardwareDesc = L"Stream_01";
             unsigned int pos;
             pos = m_hardwareDesc.find(HW_LDIGIRED, 0);
             if( pos != wstring::npos )
@@ -483,9 +466,10 @@ void ConnectionUSB::FindDevices()
         {
             int r = libusb_get_device_descriptor(devs[i], &desc);
             if(r<0)
-                cout << "failed to get device description" << endl;
+                printf("failed to get device description\n");
             int pid = desc.idProduct;
             int vid = desc.idVendor;
+
             if( vid == 1204)
             {
                 if(pid == 34323)
@@ -497,7 +481,40 @@ void ConnectionUSB::FindDevices()
                 else if(pid == 241)
                 {
                     m_hardwareName = HW_DIGIRED;
-                    m_deviceNames.push_back("DigiRed");
+                    libusb_device_handle *tempDev_handle;
+                    tempDev_handle = libusb_open_device_with_vid_pid(ctx, vid, pid);
+                    if(libusb_kernel_driver_active(tempDev_handle, 0) == 1)   //find out if kernel driver is attached
+                    {
+                        if(libusb_detach_kernel_driver(tempDev_handle, 0) == 0) //detach it
+                            printf("Kernel Driver Detached!\n");
+                    }
+                    if(libusb_claim_interface(tempDev_handle, 0) < 0) //claim interface 0 (the first) of device
+                    {
+                        printf("Cannot Claim Interface\n");
+                    }
+
+                    string fullName;
+                    //check operating speed
+                    int speed = libusb_get_device_speed(devs[i]);
+                    if(speed == LIBUSB_SPEED_HIGH)
+                        fullName = "USB 2.0";
+                    else if(speed == LIBUSB_SPEED_SUPER)
+                        fullName = "USB 3.0";
+                    else
+                        fullName = "USB";
+                    fullName += " (";
+                    //read device name
+                    char data[255];
+                    memset(data, 0, 255);
+                    int st = libusb_get_string_descriptor_ascii(tempDev_handle, 2, (unsigned char*)data, 255);
+                    if(strstr(data, HW_LMS_DEV_LMS6002USB) != NULL)
+                        m_hardwareName = HW_LMS_DEV_LMS6002USB;
+                    if(strlen(data) > 0)
+                        fullName += data;
+                    fullName += ")";
+                    libusb_close(tempDev_handle);
+
+                    m_deviceNames.push_back(fullName);
                     m_dev_pid_vid.push_back( pair<int,int>(pid,vid));
                 }
             }
@@ -506,7 +523,6 @@ void ConnectionUSB::FindDevices()
     else
     {
         libusb_free_device_list(devs, 1);
-        return;
     }
     #endif
 }
@@ -522,18 +538,31 @@ string ConnectionUSB::DeviceName()
 {
 	#ifndef __unix__
 	string name;
-	char tempName [256];
-	//memcpy(&tempName, &USBDevicePrimary->DeviceName, 256);
-	for(int i=0; i<256; ++i)
-	{
-		tempName[i] = USBDevicePrimary->FriendlyName[i];
-	}
-    name = tempName;
+	char tempName[USB_STRING_MAXLEN];
+	//memcpy(tempName, USBDevicePrimary->FriendlyName, USB_STRING_MAXLEN);
+    //name = tempName;
+
+	for (int i = 0; i < USB_STRING_MAXLEN; ++i)
+		tempName[i] = USBDevicePrimary->DeviceName[i];
+    if (USBDevicePrimary->bSuperSpeed == true)
+        name = "USB 3.0";
+    else if (USBDevicePrimary->bHighSpeed == true)
+        name = "USB 2.0";
+    else
+        name = "USB";
+    name += " (";
+	name += tempName;
+	name += ")";
     return name;
-    #else
-    string name = "no name";
-    return name;
-    #endif
+#else
+    if(dev_handle != 0)
+    {
+        char data[255];
+        int st = libusb_get_string_descriptor_ascii(dev_handle, 2, (unsigned char*)data, 255);
+        return string(data);
+    }
+    return "no name";
+#endif
 }
 
 /**
@@ -565,14 +594,14 @@ int ConnectionUSB::BeginDataReading(char *buffer, long length)
     #else
     unsigned int Timeout = 1000;
     libusb_transfer *tr = contexts[i].transfer;
-    //libusb_set_iso_packet_lengths(contexts[i].transfer, 512*64);
-	libusb_fill_bulk_transfer(tr, dev_handle, 0x86, (unsigned char*)buffer, length, callback_libusbtransfer, &contexts[i], Timeout);
+    if(ConnectedDeviceType() == LMS_DEV_DIGIGREEN)
+        libusb_fill_bulk_transfer(tr, dev_handle, 0x86, (unsigned char*)buffer, length, callback_libusbtransfer, &contexts[i], Timeout);
+    else
+        libusb_fill_bulk_transfer(tr, dev_handle, 0x81, (unsigned char*)buffer, length, callback_libusbtransfer, &contexts[i], Timeout);
 	contexts[i].done = false;
 	contexts[i].bytesXfered = 0;
 	contexts[i].bytesExpected = length;
     int status = libusb_submit_transfer(tr);
-//    int actual = 0;
-//    int status = libusb_bulk_transfer(dev_handle, 0x86, (unsigned char*)buffer, length, &actual, USB_TIMEOUT);
     if(status != 0)
         printf("ERROR BEGIN DATA TRANSFER %s\n", libusb_error_name(status));
     #endif
@@ -602,7 +631,6 @@ int ConnectionUSB::WaitForReading(int contextHandle, unsigned int timeout_ms)
 	    struct timeval tv;
 	    tv.tv_sec = 1;
 	    tv.tv_usec = 0;
-		//if(libusb_handle_events(ctx) != 0)
 		if(libusb_handle_events_timeout_completed(ctx, &tv, NULL) != 0)
             printf("error libusb_handle_events %i\n", status);
 		t2 = getMilis();
@@ -693,12 +721,12 @@ int ConnectionUSB::BeginDataSending(const char *buffer, long length)
 	return i;
     #else
     unsigned int Timeout = 1000;
-    libusb_transfer *tr = contexts[i].transfer;
-    libusb_set_iso_packet_lengths(contexts[i].transfer, 512*64);
-	libusb_fill_bulk_transfer(tr, dev_handle, 0x86, (unsigned char*)buffer, length, callback_libusbtransfer, &contexts[i], Timeout);
-	contexts[i].done = false;
-	contexts[i].bytesXfered = 0;
-	contexts[i].bytesExpected = length;
+    libusb_transfer *tr = contextsToSend[i].transfer;
+    libusb_set_iso_packet_lengths(contextsToSend[i].transfer, 512*64);
+	libusb_fill_bulk_transfer(tr, dev_handle, 0x01, (unsigned char*)buffer, length, callback_libusbtransfer, &contextsToSend[i], Timeout);
+	contextsToSend[i].done = false;
+	contextsToSend[i].bytesXfered = 0;
+	contextsToSend[i].bytesExpected = length;
     libusb_submit_transfer(tr);
     #endif
     return i;
@@ -770,6 +798,11 @@ void ConnectionUSB::AbortSending()
 {
 #ifndef __unix__
 	OutEndPt->Abort();
+#else
+    for(int i=0; i<USB_MAX_CONTEXTS; ++i)
+    {
+        libusb_cancel_transfer( contextsToSend[i].transfer );
+    }
 #endif
 }
 
